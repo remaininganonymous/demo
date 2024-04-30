@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="'Эксперимент № ' + ${experiment.id}">Эксперимент</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+        .back-anchor a {
+            text-decoration: none;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+        html, body {
+            height:100%
+        }
+        button {
+            padding: 5px 20px;
+            font-size: 16px;
+        }
+        .content {
+            min-height:97.8%;
+
+            padding-top: 20px;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+        .graph {
+            width:700px;
+        }
+        footer {
+            position: relative;
+            bottom: 0;
+            width: 100%;
+            height: 60px; /* Высота футера */
+            margin-top: -60px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            background-color: #f9f9f9; /* Цвет фона футера */
+            border-top: 1px solid #ddd; /* Линия под футером */
+            line-height: 60px; /* Центрирование текста по вертикали */
+            clear: both;
+        }
+    </style>
+</head>
+<body>
+<div class="content">
+  <div class="back-anchor">
+    <a th:href="@{/}"><< Назад</a>
+  </div>
+  <!-- <button id="newExperimentBtn">Начать новый эксперимент</button> -->
+  <h1 th:text="'Эксперимент № ' + ${experiment.id}">Эксперимент №0000</h1>
+  <hr>
+  <form th:action="@{/experiment/{id}/delete(id=${experiment.id})}" method="post" onsubmit="return confirmDelete();">
+    <input type="hidden" th:name="_method" th:value="delete"/>
+    <button type="submit">Удалить данные</button>
+  </form>
+  <p th:text="'Время начала эксперимента: ' + ${#temporals.format(experiment.start, 'dd.MM.yyyy HH:mm')}">Время начала эксперимента: dd-MM-yyyy HH:mm</p>
+  <p th:text="'Время окончания эксперимента: ' + ${#temporals.format(experiment.end, 'dd.MM.yyyy HH:mm')}">Время окончания эксперимента: dd-MM-yyyy HH:mm</p>
+  <p th:text="'Длительность: ' + ${#temporals.format(experiment.duration, 'HH ч mm мин ss с')}">Длительность: HH:mm:ss</p>
+  <p th:text="'ФИО пациента: ' + ${patient.name}">ФИО пациента: Имя Фамилия Отчество</p>
+  <p th:text="'Информация о пациенте: ' + ${patient.info}">Информация о пациенте: М, dd.MM.yyyy, жалуется на боли в левом тазобедренном суставе. Перенес острую инфекцию 3 года назад, после чего были диагностированы обширные воспаления на коленных и тазобедренных суставах, также был периодический дискомфорт в суставах на пальцах левой ноги.</p>
+  <br/>
+  <h3>Анамнез</h3>
+  <p th:text="${experiment.description}"></p>
+  <br/>
+  <h3>Результаты исследования</h3>
+  <p th:utext="'В ходе этого эксперимента было установлено, что темп человека при ходьбе составляет ' + ${experimentData.pace} + ' шаг/мин (время шага - X мин), а ритм - ' + ${experimentData.rhythm} + ' шаг/мин. <b>Данный пациент - больной.</b>'">
+    В ходе этого эксперимента было установлено, что темп человека при ходьбе составляет XXX шаг/мин (время шага - X мин), а ритм - ХХ шаг/мин. <b>Данный пациент - больной.</b>
+  </p>
+  <div class="graph">
+    <canvas id="myChart" th:attr="data-chartdata=${chartData}"></canvas>
+  </div>
+  <p th:text="'Заключение врача: ' + ${experimentData.conclusions}">
+    Заключение врача: данные, полученные в ходе диагностики, подтверждают выводы, сделанные ЭВМ. Основываясь на данные исследования, можно сказать, что...
+  </p>
+</div>
+<script>
+    function confirmDelete() {
+        return confirm("Вы уверены, что хотите удалить данные об этом эксперименте?");
+    }
+</script>
+<script th:inline="javascript">
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var accelBefore = [[${accelBefore}]];
+        var gyroBefore = [[${gyroBefore}]];
+        var accelAfter = [[${accelAfter}]];
+        var gyroAfter = [[${gyroAfter}]];
+
+        var accelBeforeData = {
+            labels: accelBefore.map(data => data.label),
+                datasets: [{
+                    label: 'Accel Unfiltered',
+                    data: accelBefore.map(data => data.value),
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    fill: false
+                }]
+        };
+
+        var gyroBeforeData = {
+            labels: gyroBefore.map(data => data.label),
+                datasets: [{
+                    label: 'Gyro Unfiltered',
+                    data: gyroBefore.map(data => data.value),
+                    borderColor: 'rgba(199, 21, 133, 1)',
+                    borderWidth: 1,
+                    fill: false
+                }]
+        };
+
+        var accelAfterData = {
+            labels: accelAfter.map(data => data.label),
+                datasets: [{
+                    label: 'Accel Filtered',
+                    data: accelAfter.map(data => data.value),
+                    borderColor: 'rgba(255, 140, 0, 1)',
+                    borderWidth: 1,
+                    fill: false
+                }]
+        };
+
+        var gyroAfterData = {
+            labels: gyroAfter.map(data => data.label),
+                datasets: [{
+                    label: 'Gyro Filtered',
+                    data: gyroAfter.map(data => data.value),
+                    borderColor: 'rgba(0, 255, 0, 1)',
+                    borderWidth: 1,
+                    fill: false
+                }]
+        };
+
+        var options = {
+            scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+            },
+            elements: {
+                    point:{
+                        radius: 0
+                    }
+            }
+        };
+
+        var myChart = new Chart(ctx, {
+            type: 'line',
+            data: accelBeforeData,
+            options: options
+        });
+
+        myChart.data.datasets.push(gyroBeforeData.datasets[0]);
+        myChart.data.datasets.push(accelAfterData.datasets[0]);
+        myChart.data.datasets.push(gyroAfterData.datasets[0]);
+        myChart.update();
+</script>
+</body>
+<footer>
+  &copy; 2024 Все права защищены
+</footer>
+</html>

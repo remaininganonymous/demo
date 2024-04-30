@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Запись/удаление пациентов</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+        html, body {
+            height:100%
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        .fields {
+            min-width:400px;
+            max-width:700px;
+        }
+        textarea {
+            min-height:100px;
+            max-height:200px;
+        }
+        select {
+            width:405px;
+            height:20px;
+        }
+        .content {
+            min-height:97.8%;
+
+            padding-top: 20px;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+        footer {
+            position: relative;
+            bottom: 0;
+            width: 100%;
+            height: 60px; /* Высота футера */
+            margin-top: -60px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            background-color: #f9f9f9; /* Цвет фона футера */
+            border-top: 1px solid #ddd; /* Линия под футером */
+            line-height: 60px; /* Центрирование текста по вертикали */
+            clear: both;
+        }
+        .myRow {
+            cursor: pointer;
+        }
+        .controls {
+            width: 700px;
+            display: flex; /* Располагаем элементы в строку */
+            justify-content: space-between; /* Равномерно распределяем пространство между элементами */
+        }
+
+    </style>
+</head>
+<body>
+<div class="content">
+    <div class="back-anchor">
+        <a th:href="@{/}"><< Назад</a>
+    </div>
+    <h1>Запись/удаление пациентов</h1>
+    <hr>
+    <form id="form" onsubmit="return validateForm()" th:action="@{/createPerson}" th:object="${PatientRegistrationDTO}" method="post">
+        <label for="name">ФИО:</label><br>
+        <input class="fields" th:field="*{name}" type="text" id="name" name="name" required><br><br>
+        <label for="info">Информация:</label><br>
+        <!--<input class="fields" th:field="*{info}" type="text" id="info" name="info" required><br><br>-->
+        <textarea class="fields" th:field="*{info}" type="text" id="info" name="info" required rows="4" cols="50"></textarea><br><br>
+        <button type="submit">Добавить</button>
+    </form>
+    </br>
+    </br>
+    <form th:action="@{/deletePatient}" method="post">
+        <label for="patientToDelete">Необследованные пациенты:</label><br>
+        <select id="patientToDelete" name="patientIdToDelete" onchange="toggleButton()">
+            <option th:each="patient : ${patientsToDelete}" th:value="${patient.id}" th:text="${patient.name}">Patient</option>
+        </select><br><br>
+        <button id="deleteButton" type="submit" onclick="return confirmDelete();" disabled>Удалить пользователя</button>
+    </form>
+
+</div>
+<footer>
+    &copy; 2024 Все права защищены
+</footer>
+<script>
+    function confirmDelete() {
+        return confirm("Вы уверены, что хотите стереть все данные о пациенте?");
+    }
+    function toggleButton() {
+        var selectElement = document.getElementById('patientToDelete');
+        var deleteButton = document.getElementById('deleteButton');
+
+        // Если выбран элемент в списке, делаем кнопку активной, иначе - неактивной
+        if (selectElement.options.length > 0) {
+            deleteButton.disabled = false;
+        } else {
+            deleteButton.disabled = true;
+        }
+    }
+
+    // Вызываем toggleButton() при загрузке страницы, чтобы установить начальное состояние кнопки
+    window.onload = toggleButton;
+</script>
+</body>
+</html>

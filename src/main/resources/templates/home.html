@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Проект</title>
+  <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+        html, body {
+            height:100%
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        table {
+            overflow:auto;
+            margin-bottom: 90px;
+
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+            margin-top: 20px;
+
+        }
+        .content {
+            min-height:97.8%;
+
+            padding-top: 20px;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            white-space: nowrap; /* Предотвратите перенос текста */
+            overflow: hidden; /* Скрыть текст, выходящий за пределы ячейки */
+            text-overflow: ellipsis; /* Добавить многоточие для обозначения усеченного текста */
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        footer {
+            position: relative;
+            bottom: 0;
+            width: 100%;
+            height: 60px; /* Высота футера */
+            margin-top: -60px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            background-color: #f9f9f9; /* Цвет фона футера */
+            border-top: 1px solid #ddd; /* Линия под футером */
+            line-height: 60px; /* Центрирование текста по вертикали */
+            clear: both;
+        }
+        .myRow {
+            cursor: pointer;
+        }
+        .controls {
+            width: 950px;
+            display: flex; /* Располагаем элементы в строку */
+            justify-content: space-between; /* Равномерно распределяем пространство между элементами */
+        }
+
+    </style>
+</head>
+<body>
+<div class="content">
+  <div class="controls">
+    <button id="newPatientBtn" type="submit" th:onclick="window.location.href='/createPerson'">Добавить/удалить пациентов</button>
+    <form th:action="@{/new-exp}" method="post">
+      <input type="hidden" th:name="_newExp" th:value="newExp"/>
+      <button id="newExperimentBtn" type="submit">Начать новый эксперимент</button>
+    </form>
+    <form th:action="@{/rundemo}" method="post">
+      <input type="hidden" th:name="_rundemo" th:value="rundemo"/>
+      <button id="demoSamplesBtn" type="submit">Load demo samples</button>
+    </form>
+    <form th:action="@{/clear}" method="post" onsubmit="return confirmClear();">
+      <input type="hidden" th:name="_clearAll" th:value="clearAll"/>
+      <button id="clearAllBtn" type="submit">Удалить все эксперименты</button>
+    </form>
+  </div>
+  <h2>Список экспериментов</h2>
+  <table>
+    <col style="width:32%">
+    <col style="width:38%">
+    <col style="width:15%">
+    <col style="width:15%">
+    <thead>
+    <tr>
+      <th class="p_name">Пациент</th>
+      <th class="e_descr">Описание</th>
+      <th class="e_start">Дата-время</th>
+      <th class="e_dur">Длительность (мин)</th>
+    </tr>
+    </thead>
+    <tbody id="experimentList">
+    <!-- Используем Thymeleaf цикл для создания строк таблицы на основе данных из контроллера -->
+    <tr class="myRow" th:each="experiment : ${experiments}" th:onclick="'window.location.href = \'' + @{/experiment/{id}(id=${experiment.id})} + '\''">
+      <td class="p_name" th:text="${experiment.patient.name}">Пациент</td>
+      <td class="e_descr" th:text="${experiment.description}">Описание</td>
+      <td class="e_start" th:text="${#temporals.format(experiment.start, 'dd-MM-yyyy HH:mm')}">Дата-время</td>
+      <td class="e_dur" th:text="${#temporals.format(experiment.duration, 'HH:mm:ss')}">Длительность</td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+<footer>
+  &copy; 2024 Все права защищены
+</footer>
+<script>
+    function confirmClear() {
+        return confirm("Вы уверены, что хотите удалить все записи об экспериментах?");
+    }
+</script>
+</body>
+</html>
